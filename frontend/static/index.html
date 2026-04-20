@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能财务决策工具 - SmartFlow Calendar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-income {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-expense {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-bill {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .calendar-day {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .calendar-day.has-income {
+            background: linear-gradient(135deg, rgba(17, 153, 142, 0.3) 0%, rgba(56, 239, 125, 0.3) 100%);
+            border-color: #38ef7d;
+        }
+        
+        .calendar-day.has-expense {
+            background: linear-gradient(135deg, rgba(235, 51, 73, 0.3) 0%, rgba(244, 92, 67, 0.3) 100%);
+            border-color: #f45c43;
+        }
+        
+        .calendar-day.has-bill {
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.3) 0%, rgba(245, 87, 108, 0.3) 100%);
+            border-color: #f5576c;
+        }
+        
+        .calendar-day.has-multiple {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+            border-color: #667eea;
+        }
+        
+        .calendar-day.is-today {
+            border: 2px solid #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        
+        .dot-income {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .dot-expense {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .dot-bill {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-income {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-expense {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .btn-bill {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .input-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .input-glass:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .list-item {
+            transition: all 0.3s ease;
+        }
+        
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .plan-card {
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card-full {
+            border-left-color: #38ef7d;
+        }
+        
+        .plan-card-min {
+            border-left-color: #f45c43;
+        }
+        
+        .plan-card-installment {
+            border-left-color: #667eea;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 100;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        
+        .calendar-day:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <div class="min-h-screen p-4 md:p-8">
+        <header class="text-center mb-8 fade-in">
+            <h1 class="text-4xl md:text-5xl font-bold mb-2">
+                <span class="gradient-text">SmartFlow</span>
+                <span class="text-white">Calendar</span>
+            </h1>
+            <p class="text-gray-300 text-lg">智能财务决策工具 · 全景日历视图 · 最优还款方案</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card rounded-2xl p-6 fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <button onclick="changeMonth('prev')" class="p-2 rounded-full hover:bg-white/10 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <h2 id="calendarTitle" class="text-2xl font-semibold"></h2>
+                        <button onclick="changeMonth('next')" class="p-2 rounded-full hover:bg-white/10 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-2 mb-4">
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">日</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">一</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">二</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">三</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">四</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">五</div>
+                        <div class="text-center text-gray-400 text-sm font-medium py-2">六</div>
+                    </div>
+                    
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-6 mt-6 pt-6 border-t border-white/10">
+                        <div class="flex items-center gap-2">
+                            <div class="dot dot-income"></div>
+                            <span class="text-sm text-gray-300">收入</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="dot dot-expense"></div>
+                            <span class="text-sm text-gray-300">日常开支</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="dot dot-bill"></div>
+                            <span class="text-sm text-gray-300">账单到期</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 fade-in">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        智能还款计算
+                    </h3>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <div class="flex-1">
+                            <label class="block text-sm text-gray-300 mb-2">当期可用于还款的现金总额</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                                <input type="number" id="availableCash" placeholder="请输入金额" 
+                                    class="input-glass w-full pl-10 pr-4 py-3 rounded-xl text-white placeholder-gray-400 outline-none">
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="calculateRepayment()" 
+                                class="btn-gradient w-full md:w-auto px-8 py-3 rounded-xl font-semibold text-white">
+                                生成最优方案
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="repaymentResult" class="hidden">
+                        <div class="border-t border-white/10 pt-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="glass-card rounded-xl p-4 text-center">
+                                    <p class="text-gray-400 text-sm mb-1">总利息预估</p>
+                                    <p id="totalInterest" class="text-2xl font-bold gradient-text-expense">¥0.00</p>
+                                </div>
+                                <div class="glass-card rounded-xl p-4 text-center">
+                                    <p class="text-gray-400 text-sm mb-1">本期还款总额</p>
+                                    <p id="totalPayment" class="text-2xl font-bold gradient-text">¥0.00</p>
+                                </div>
+                                <div class="glass-card rounded-xl p-4 text-center">
+                                    <p class="text-gray-400 text-sm mb-1">剩余现金</p>
+                                    <p id="remainingCash" class="text-2xl font-bold gradient-text-income">¥0.00</p>
+                                </div>
+                            </div>
+                            
+                            <h4 class="font-semibold mb-4 text-lg">还款分配建议</h4>
+                            <div id="recommendationText" class="glass-card-light rounded-xl p-4 mb-6 text-gray-800 whitespace-pre-line">
+                            </div>
+                            
+                            <h4 class="font-semibold mb-4 text-lg">详细方案</h4>
+                            <div id="plansContainer" class="space-y-3">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="noBillsMessage" class="hidden text-center py-8">
+                        <svg class="w-16 h-16 mx-auto text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <p class="text-gray-400">请先添加账单以使用智能还款计算</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-card rounded-2xl p-6 fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            未来收入
+                        </h3>
+                        <button onclick="toggleForm('incomeForm')" class="btn-income px-4 py-2 rounded-lg text-white text-sm font-medium">
+                            + 添加
+                        </button>
+                    </div>
+                    
+                    <form id="incomeForm" class="hidden space-y-3 mb-4" onsubmit="addIncome(event)">
+                        <input type="date" id="incomeDate" required
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                            <input type="number" id="incomeAmount" placeholder="金额" required step="0.01"
+                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        </div>
+                        <input type="text" id="incomeDesc" placeholder="描述（可选）"
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <button type="submit" class="btn-income w-full py-2 rounded-lg text-white font-medium">
+                            确认添加
+                        </button>
+                    </form>
+                    
+                    <div id="incomeList" class="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-400 text-sm text-center py-4">暂无收入记录</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            日常开支
+                        </h3>
+                        <button onclick="toggleForm('expenseForm')" class="btn-expense px-4 py-2 rounded-lg text-white text-sm font-medium">
+                            + 添加
+                        </button>
+                    </div>
+                    
+                    <form id="expenseForm" class="hidden space-y-3 mb-4" onsubmit="addExpense(event)">
+                        <select id="expenseDay" required
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none bg-transparent">
+                            <option value="" class="text-gray-800">选择每月日期</option>
+                            <option value="1" class="text-gray-800">1号</option>
+                            <option value="5" class="text-gray-800">5号</option>
+                            <option value="10" class="text-gray-800">10号</option>
+                            <option value="15" class="text-gray-800">15号</option>
+                            <option value="20" class="text-gray-800">20号</option>
+                            <option value="25" class="text-gray-800">25号</option>
+                            <option value="28" class="text-gray-800">28号</option>
+                        </select>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                            <input type="number" id="expenseAmount" placeholder="金额" required step="0.01"
+                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        </div>
+                        <input type="text" id="expenseDesc" placeholder="描述（如：房租、水电）"
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <button type="submit" class="btn-expense w-full py-2 rounded-lg text-white font-medium">
+                            确认添加
+                        </button>
+                    </form>
+                    
+                    <div id="expenseList" class="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-400 text-sm text-center py-4">暂无开支记录</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            信贷账单
+                        </h3>
+                        <button onclick="toggleForm('billForm')" class="btn-bill px-4 py-2 rounded-lg text-white text-sm font-medium">
+                            + 添加
+                        </button>
+                    </div>
+                    
+                    <form id="billForm" class="hidden space-y-3 mb-4" onsubmit="addBill(event)">
+                        <input type="text" id="billPlatform" placeholder="平台名称（如：花呗、信用卡A）" required
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                            <input type="number" id="billAmount" placeholder="账单金额" required step="0.01"
+                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        </div>
+                        <input type="date" id="billDueDate" required
+                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
+                        <div class="relative">
+                            <input type="number" id="billAPR" placeholder="年化利率（%）" required step="0.01"
+                                class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">%</span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                            <input type="number" id="billMinPayment" placeholder="最低还款额（可选，默认10%）" step="0.01"
+                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        </div>
+                        <button type="submit" class="btn-bill w-full py-2 rounded-lg text-white font-medium">
+                            确认添加
+                        </button>
+                    </form>
+                    
+                    <div id="billList" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-400 text-sm text-center py-4">暂无账单记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        
+        let incomes = [];
+        let expenses = [];
+        let bills = [];
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth() + 1;
+
+        function formatCurrency(amount) {
+            return '¥' + parseFloat(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+
+        function getMonthName(month) {
+            const months = ['一月', '二月', '三月', '四月', '五月', '六月', 
+                           '七月', '八月', '九月', '十月', '十一月', '十二月'];
+            return months[month - 1];
+        }
+
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            form.classList.toggle('hidden');
+        }
+
+        async function fetchCalendar() {
+            try {
+                const response = await fetch(`${API_BASE}/api/calendar?year=${currentYear}&month=${currentMonth}`);
+                const data = await response.json();
+                renderCalendar(data);
+            } catch (error) {
+                console.error('Error fetching calendar:', error);
+            }
+        }
+
+        async function changeMonth(direction) {
+            try {
+                const response = await fetch(`${API_BASE}/api/month/${direction}`, { method: 'POST' });
+                const data = await response.json();
+                currentYear = data.year;
+                currentMonth = data.month;
+                renderCalendar(data);
+            } catch (error) {
+                console.error('Error changing month:', error);
+            }
+        }
+
+        function renderCalendar(data) {
+            document.getElementById('calendarTitle').textContent = 
+                `${data.year}年 ${getMonthName(data.month)}`;
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(data.year, data.month - 1, 1).getDay();
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === data.year && 
+                                   today.getMonth() + 1 === data.month;
+            
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'h-16 md:h-20';
+                grid.appendChild(emptyDay);
+            }
+            
+            for (const day of data.days) {
+                const dayEl = document.createElement('div');
+                let className = 'calendar-day h-16 md:h-20 rounded-xl p-2 cursor-pointer border border-white/10 relative';
+                
+                const isToday = isCurrentMonth && today.getDate() === day.day;
+                if (isToday) {
+                    className += ' is-today';
+                }
+                
+                const hasIncome = day.is_income;
+                const hasExpense = day.is_expense;
+                const hasBill = day.is_bill_due;
+                
+                const eventCount = (hasIncome ? 1 : 0) + (hasExpense ? 1 : 0) + (hasBill ? 1 : 0);
+                
+                if (eventCount > 1) {
+                    className += ' has-multiple';
+                } else if (hasIncome) {
+                    className += ' has-income';
+                } else if (hasExpense) {
+                    className += ' has-expense';
+                } else if (hasBill) {
+                    className += ' has-bill';
+                }
+                
+                dayEl.className = className;
+                
+                dayEl.innerHTML = `
+                    <div class="text-sm font-medium ${isToday ? 'text-purple-300' : 'text-white'}">${day.day}</div>
+                    <div class="flex items-center gap-1 mt-1">
+                        ${hasIncome ? '<div class="dot dot-income"></div>' : ''}
+                        ${hasExpense ? '<div class="dot dot-expense"></div>' : ''}
+                        ${hasBill ? '<div class="dot dot-bill"></div>' : ''}
+                    </div>
+                    ${eventCount > 0 ? `
+                        <div class="tooltip -top-12 left-1/2 transform -translate-x-1/2">
+                            ${hasIncome ? `<div class="text-green-400">收入: ${formatCurrency(day.income_amount)}</div>` : ''}
+                            ${hasExpense ? `<div class="text-red-400">开支: ${formatCurrency(day.expense_amount)}</div>` : ''}
+                            ${hasBill ? day.bills_due.map(b => 
+                                `<div class="text-pink-400">${b.platform}: ${formatCurrency(b.amount)}</div>`
+                            ).join('') : ''}
+                        </div>
+                    ` : ''}
+                `;
+                
+                grid.appendChild(dayEl);
+            }
+        }
+
+        async function addIncome(event) {
+            event.preventDefault();
+            
+            const date = document.getElementById('incomeDate').value;
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const description = document.getElementById('incomeDesc').value || '收入';
+            
+            if (!date || isNaN(amount)) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/incomes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, amount, description })
+                });
+                
+                if (response.ok) {
+                    incomes.push(await response.json());
+                    renderIncomes();
+                    fetchCalendar();
+                    
+                    document.getElementById('incomeDate').value = '';
+                    document.getElementById('incomeAmount').value = '';
+                    document.getElementById('incomeDesc').value = '';
+                    toggleForm('incomeForm');
+                }
+            } catch (error) {
+                console.error('Error adding income:', error);
+            }
+        }
+
+        async function deleteIncome(id) {
+            try {
+                await fetch(`${API_BASE}/api/incomes/${id}`, { method: 'DELETE' });
+                incomes = incomes.filter(i => i.id !== id);
+                renderIncomes();
+                fetchCalendar();
+            } catch (error) {
+                console.error('Error deleting income:', error);
+            }
+        }
+
+        function renderIncomes() {
+            const list = document.getElementById('incomeList');
+            
+            if (incomes.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">暂无收入记录</p>';
+                return;
+            }
+            
+            list.innerHTML = incomes.map(income => `
+                <div class="list-item flex items-center justify-between p-3 rounded-lg">
+                    <div>
+                        <div class="text-green-400 font-medium">${formatCurrency(income.amount)}</div>
+                        <div class="text-gray-400 text-sm">${income.description} · ${formatDate(income.date)}</div>
+                    </div>
+                    <button onclick="deleteIncome(${income.id})" class="text-red-400 hover:text-red-300 p-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function addExpense(event) {
+            event.preventDefault();
+            
+            const day_of_month = parseInt(document.getElementById('expenseDay').value);
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const description = document.getElementById('expenseDesc').value || '日常开支';
+            
+            if (!day_of_month || isNaN(amount)) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/expenses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ day_of_month, amount, description })
+                });
+                
+                if (response.ok) {
+                    expenses.push(await response.json());
+                    renderExpenses();
+                    fetchCalendar();
+                    
+                    document.getElementById('expenseDay').value = '';
+                    document.getElementById('expenseAmount').value = '';
+                    document.getElementById('expenseDesc').value = '';
+                    toggleForm('expenseForm');
+                }
+            } catch (error) {
+                console.error('Error adding expense:', error);
+            }
+        }
+
+        async function deleteExpense(id) {
+            try {
+                await fetch(`${API_BASE}/api/expenses/${id}`, { method: 'DELETE' });
+                expenses = expenses.filter(e => e.id !== id);
+                renderExpenses();
+                fetchCalendar();
+            } catch (error) {
+                console.error('Error deleting expense:', error);
+            }
+        }
+
+        function renderExpenses() {
+            const list = document.getElementById('expenseList');
+            
+            if (expenses.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">暂无开支记录</p>';
+                return;
+            }
+            
+            list.innerHTML = expenses.map(expense => `
+                <div class="list-item flex items-center justify-between p-3 rounded-lg">
+                    <div>
+                        <div class="text-red-400 font-medium">${formatCurrency(expense.amount)}</div>
+                        <div class="text-gray-400 text-sm">${expense.description} · 每月${expense.day_of_month}号</div>
+                    </div>
+                    <button onclick="deleteExpense(${expense.id})" class="text-red-400 hover:text-red-300 p-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function addBill(event) {
+            event.preventDefault();
+            
+            const platform = document.getElementById('billPlatform').value;
+            const amount = parseFloat(document.getElementById('billAmount').value);
+            const due_date = document.getElementById('billDueDate').value;
+            const apr = parseFloat(document.getElementById('billAPR').value);
+            const minPaymentStr = document.getElementById('billMinPayment').value;
+            const min_payment = minPaymentStr ? parseFloat(minPaymentStr) : amount * 0.1;
+            
+            if (!platform || isNaN(amount) || !due_date || isNaN(apr)) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/bills`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        platform, 
+                        amount, 
+                        due_date, 
+                        apr, 
+                        min_payment,
+                        installment_options: [3, 6, 12]
+                    })
+                });
+                
+                if (response.ok) {
+                    bills.push(await response.json());
+                    renderBills();
+                    fetchCalendar();
+                    checkBillsForCalculator();
+                    
+                    document.getElementById('billPlatform').value = '';
+                    document.getElementById('billAmount').value = '';
+                    document.getElementById('billDueDate').value = '';
+                    document.getElementById('billAPR').value = '';
+                    document.getElementById('billMinPayment').value = '';
+                    toggleForm('billForm');
+                }
+            } catch (error) {
+                console.error('Error adding bill:', error);
+            }
+        }
+
+        async function deleteBill(id) {
+            try {
+                await fetch(`${API_BASE}/api/bills/${id}`, { method: 'DELETE' });
+                bills = bills.filter(b => b.id !== id);
+                renderBills();
+                fetchCalendar();
+                checkBillsForCalculator();
+            } catch (error) {
+                console.error('Error deleting bill:', error);
+            }
+        }
+
+        function renderBills() {
+            const list = document.getElementById('billList');
+            
+            if (bills.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">暂无账单记录</p>';
+                return;
+            }
+            
+            list.innerHTML = bills.map(bill => {
+                const dueDate = new Date(bill.due_date);
+                const today = new Date();
+                const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                
+                let statusText = '';
+                let statusClass = '';
+                
+                if (daysUntilDue < 0) {
+                    statusText = `已逾期 ${Math.abs(daysUntilDue)} 天`;
+                    statusClass = 'text-red-400';
+                } else if (daysUntilDue === 0) {
+                    statusText = '今天到期';
+                    statusClass = 'text-yellow-400';
+                } else if (daysUntilDue <= 7) {
+                    statusText = `还有 ${daysUntilDue} 天`;
+                    statusClass = 'text-yellow-400';
+                } else {
+                    statusText = `还有 ${daysUntilDue} 天`;
+                    statusClass = 'text-gray-400';
+                }
+                
+                return `
+                    <div class="list-item p-3 rounded-lg">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-medium text-pink-400">${bill.platform}</span>
+                            <button onclick="deleteBill(${bill.id})" class="text-red-400 hover:text-red-300 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white font-medium">${formatCurrency(bill.amount)}</span>
+                            <span class="${statusClass} text-sm">${statusText}</span>
+                        </div>
+                        <div class="text-gray-400 text-sm mt-1">
+                            利率: ${bill.apr}% · 最低: ${formatCurrency(bill.min_payment || bill.amount * 0.1)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function checkBillsForCalculator() {
+            const noBillsMessage = document.getElementById('noBillsMessage');
+            const repaymentResult = document.getElementById('repaymentResult');
+            
+            if (bills.length === 0) {
+                noBillsMessage.classList.remove('hidden');
+                repaymentResult.classList.add('hidden');
+            } else {
+                noBillsMessage.classList.add('hidden');
+            }
+        }
+
+        async function calculateRepayment() {
+            const availableCash = parseFloat(document.getElementById('availableCash').value);
+            
+            if (isNaN(availableCash) || availableCash < 0) {
+                alert('请输入有效的可用现金金额');
+                return;
+            }
+            
+            if (bills.length === 0) {
+                alert('请先添加账单');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/calculate-repayment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ available_cash: availableCash })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayRepaymentResult(result);
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Error calculating repayment:', error);
+                alert('计算还款方案时出错');
+            }
+        }
+
+        function displayRepaymentResult(result) {
+            const resultDiv = document.getElementById('repaymentResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.add('fade-in');
+            
+            document.getElementById('totalInterest').textContent = formatCurrency(result.total_interest);
+            document.getElementById('totalPayment').textContent = formatCurrency(result.total_payment);
+            document.getElementById('remainingCash').textContent = formatCurrency(result.remaining_cash);
+            
+            document.getElementById('recommendationText').textContent = result.recommendation_text;
+            
+            const plansContainer = document.getElementById('plansContainer');
+            plansContainer.innerHTML = result.plans.map(plan => {
+                let planClass = '';
+                let typeIcon = '';
+                
+                if (plan.repayment_type === '全额还款') {
+                    planClass = 'plan-card-full';
+                    typeIcon = '✓';
+                } else if (plan.repayment_type === '最低还款') {
+                    planClass = 'plan-card-min';
+                    typeIcon = '↓';
+                } else {
+                    planClass = 'plan-card-installment';
+                    typeIcon = '📅';
+                }
+                
+                let detailText = '';
+                if (plan.repayment_type === '分期还款') {
+                    detailText = `分${plan.installment_months}期，每期 ${formatCurrency(plan.monthly_payment)}`;
+                } else if (plan.repayment_type === '最低还款' && plan.payment_amount > 0) {
+                    detailText = `还款 ${formatCurrency(plan.payment_amount)}，剩余 ${formatCurrency(plan.original_amount - plan.payment_amount)}`;
+                } else if (plan.payment_amount === 0) {
+                    detailText = '资金不足，建议优先处理';
+                } else {
+                    detailText = `还款 ${formatCurrency(plan.payment_amount)}`;
+                }
+                
+                return `
+                    <div class="plan-card ${planClass} glass-card rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">${typeIcon} ${plan.platform}</span>
+                            <span class="text-sm text-gray-300">${plan.repayment_type}</span>
+                        </div>
+                        <div class="text-sm text-gray-400 mb-1">${detailText}</div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-400">原金额: ${formatCurrency(plan.original_amount)}</span>
+                            <span class="text-red-400">利息预估: ${formatCurrency(plan.interest_cost)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadInitialData() {
+            try {
+                const [incomesRes, expensesRes, billsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/incomes`),
+                    fetch(`${API_BASE}/api/expenses`),
+                    fetch(`${API_BASE}/api/bills`)
+                ]);
+                
+                incomes = await incomesRes.json();
+                expenses = await expensesRes.json();
+                bills = await billsRes.json();
+                
+                renderIncomes();
+                renderExpenses();
+                renderBills();
+                fetchCalendar();
+                checkBillsForCalculator();
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            document.getElementById('incomeDate').value = today.toISOString().split('T')[0];
+            document.getElementById('billDueDate').value = today.toISOString().split('T')[0];
+            
+            loadInitialData();
+        });
+    </script>
+</body>
+</html>
