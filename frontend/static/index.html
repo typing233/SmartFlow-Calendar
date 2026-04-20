@@ -183,21 +183,31 @@
         }
         
         .delete-btn {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            border-radius: 8px;
-            padding: 6px 10px;
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            opacity: 0;
+            z-index: 10;
+        }
+        
+        .list-item:hover .delete-btn {
+            opacity: 1;
         }
         
         .delete-btn:hover {
             background: rgba(239, 68, 68, 0.3);
-            border-color: rgba(239, 68, 68, 0.6);
-            transform: scale(1.05);
+            border-color: rgba(239, 68, 68, 0.5);
+            transform: scale(1.1);
         }
         
         .delete-btn:active {
@@ -207,16 +217,16 @@
         .delete-btn svg {
             width: 14px;
             height: 14px;
-            color: #f87171;
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.2s ease;
         }
         
-        .delete-btn span {
+        .delete-btn:hover svg {
             color: #f87171;
-            font-size: 11px;
-            font-weight: 500;
         }
         
         .list-item {
+            position: relative;
             transition: all 0.3s ease;
         }
         
@@ -940,16 +950,13 @@
             }
             
             list.innerHTML = incomes.map(income => `
-                <div class="list-item flex items-center justify-between p-3 rounded-lg">
-                    <div class="flex-1">
-                        <div class="text-green-400 font-medium">${formatCurrency(income.amount)}</div>
-                        <div class="text-gray-400 text-sm">${income.description} · ${formatDate(income.date)}</div>
-                    </div>
+                <div class="list-item p-3 rounded-lg pr-8">
+                    <div class="text-green-400 font-medium">${formatCurrency(income.amount)}</div>
+                    <div class="text-gray-400 text-sm">${income.description} · ${formatDate(income.date)}</div>
                     <button onclick="deleteIncome(${income.id})" class="delete-btn" title="删除">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        <span>删除</span>
                     </button>
                 </div>
             `).join('');
@@ -1040,16 +1047,13 @@
             }
             
             list.innerHTML = expenses.map(expense => `
-                <div class="list-item flex items-center justify-between p-3 rounded-lg">
-                    <div class="flex-1">
-                        <div class="text-red-400 font-medium">${formatCurrency(expense.amount)}</div>
-                        <div class="text-gray-400 text-sm">${expense.description} · 每月${expense.day_of_month}号</div>
-                    </div>
+                <div class="list-item p-3 rounded-lg pr-8">
+                    <div class="text-red-400 font-medium">${formatCurrency(expense.amount)}</div>
+                    <div class="text-gray-400 text-sm">${expense.description} · 每月${expense.day_of_month}号</div>
                     <button onclick="deleteExpense(${expense.id})" class="delete-btn" title="删除">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        <span>删除</span>
                     </button>
                 </div>
             `).join('');
@@ -1194,16 +1198,8 @@
                 }
                 
                 return `
-                    <div class="list-item p-3 rounded-lg">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-medium text-pink-400">${bill.platform}</span>
-                            <button onclick="deleteBill(${bill.id})" class="delete-btn" title="删除">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                                <span>删除</span>
-                            </button>
-                        </div>
+                    <div class="list-item p-3 rounded-lg pr-8">
+                        <div class="font-medium text-pink-400 mb-1">${bill.platform}</div>
                         <div class="flex items-center justify-between">
                             <span class="text-white font-medium">${formatCurrency(bill.amount)}</span>
                             <span class="${statusClass} text-sm">${statusText}</span>
@@ -1211,6 +1207,11 @@
                         <div class="text-gray-400 text-sm mt-1">
                             利率: ${bill.apr}% · 最低: ${formatCurrency(bill.min_payment || bill.amount * 0.1)}
                         </div>
+                        <button onclick="deleteBill(${bill.id})" class="delete-btn" title="删除">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 `;
             }).join('');
