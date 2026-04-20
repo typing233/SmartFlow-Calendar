@@ -137,12 +137,83 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            color: white !important;
         }
         
         .input-glass:focus {
             background: rgba(255, 255, 255, 0.15);
             border-color: #667eea;
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .input-glass::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .input-glass option {
+            background: #2d2d44;
+            color: white;
+        }
+        
+        .input-glass:-webkit-autofill,
+        .input-glass:-webkit-autofill:hover,
+        .input-glass:-webkit-autofill:focus {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px rgba(45, 45, 68, 0.9) inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        select.input-glass {
+            background: rgba(255, 255, 255, 0.1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") no-repeat right 12px center;
+            background-size: 16px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 40px;
+        }
+        
+        select.input-glass option {
+            background: #2d2d44;
+            color: white;
+            padding: 8px 12px;
+        }
+        
+        select.input-glass:hover option {
+            background: #3d3d5c;
+        }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .delete-btn svg {
+            width: 14px;
+            height: 14px;
+            color: #f87171;
+        }
+        
+        .delete-btn span {
+            color: #f87171;
+            font-size: 11px;
+            font-weight: 500;
         }
         
         .list-item {
@@ -216,6 +287,89 @@
         .calendar-day:hover .tooltip {
             opacity: 1;
         }
+        
+        .error-message {
+            color: #f87171;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .input-glass.error {
+            border-color: #f87171;
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.3);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .toast.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .toast.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body class="text-white">
@@ -287,14 +441,15 @@
                             <label class="block text-sm text-gray-300 mb-2">当期可用于还款的现金总额</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
-                                <input type="number" id="availableCash" placeholder="请输入金额" 
+                                <input type="number" id="availableCash" placeholder="请输入金额" min="0"
                                     class="input-glass w-full pl-10 pr-4 py-3 rounded-xl text-white placeholder-gray-400 outline-none">
                             </div>
+                            <div id="availableCashError" class="error-message">请输入有效的金额（0或正数）</div>
                         </div>
                         <div class="flex items-end">
-                            <button onclick="calculateRepayment()" 
-                                class="btn-gradient w-full md:w-auto px-8 py-3 rounded-xl font-semibold text-white">
-                                生成最优方案
+                            <button onclick="calculateRepayment()" id="calculateBtn"
+                                class="btn-gradient w-full md:w-auto px-8 py-3 rounded-xl font-semibold text-white flex items-center justify-center gap-2">
+                                <span>生成最优方案</span>
                             </button>
                         </div>
                     </div>
@@ -350,14 +505,20 @@
                     </div>
                     
                     <form id="incomeForm" class="hidden space-y-3 mb-4" onsubmit="addIncome(event)">
-                        <input type="date" id="incomeDate" required
-                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
-                            <input type="number" id="incomeAmount" placeholder="金额" required step="0.01"
-                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <div>
+                            <input type="date" id="incomeDate" required
+                                class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
+                            <div id="incomeDateError" class="error-message">请选择日期</div>
                         </div>
-                        <input type="text" id="incomeDesc" placeholder="描述（可选）"
+                        <div>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                                <input type="number" id="incomeAmount" placeholder="金额" required min="0.01" step="0.01"
+                                    class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                            </div>
+                            <div id="incomeAmountError" class="error-message">请输入有效的金额（大于0）</div>
+                        </div>
+                        <input type="text" id="incomeDesc" placeholder="描述（可选，最多50字）" maxlength="50"
                             class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
                         <button type="submit" class="btn-income w-full py-2 rounded-lg text-white font-medium">
                             确认添加
@@ -383,23 +544,29 @@
                     </div>
                     
                     <form id="expenseForm" class="hidden space-y-3 mb-4" onsubmit="addExpense(event)">
-                        <select id="expenseDay" required
-                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none bg-transparent">
-                            <option value="" class="text-gray-800">选择每月日期</option>
-                            <option value="1" class="text-gray-800">1号</option>
-                            <option value="5" class="text-gray-800">5号</option>
-                            <option value="10" class="text-gray-800">10号</option>
-                            <option value="15" class="text-gray-800">15号</option>
-                            <option value="20" class="text-gray-800">20号</option>
-                            <option value="25" class="text-gray-800">25号</option>
-                            <option value="28" class="text-gray-800">28号</option>
-                        </select>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
-                            <input type="number" id="expenseAmount" placeholder="金额" required step="0.01"
-                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <div>
+                            <select id="expenseDay" required
+                                class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
+                                <option value="">选择每月日期</option>
+                                <option value="1">1号</option>
+                                <option value="5">5号</option>
+                                <option value="10">10号</option>
+                                <option value="15">15号</option>
+                                <option value="20">20号</option>
+                                <option value="25">25号</option>
+                                <option value="28">28号</option>
+                            </select>
+                            <div id="expenseDayError" class="error-message">请选择日期</div>
                         </div>
-                        <input type="text" id="expenseDesc" placeholder="描述（如：房租、水电）"
+                        <div>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                                <input type="number" id="expenseAmount" placeholder="金额" required min="0.01" step="0.01"
+                                    class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                            </div>
+                            <div id="expenseAmountError" class="error-message">请输入有效的金额（大于0）</div>
+                        </div>
+                        <input type="text" id="expenseDesc" placeholder="描述（如：房租、水电，最多50字）" maxlength="50"
                             class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
                         <button type="submit" class="btn-expense w-full py-2 rounded-lg text-white font-medium">
                             确认添加
@@ -425,24 +592,39 @@
                     </div>
                     
                     <form id="billForm" class="hidden space-y-3 mb-4" onsubmit="addBill(event)">
-                        <input type="text" id="billPlatform" placeholder="平台名称（如：花呗、信用卡A）" required
-                            class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
-                            <input type="number" id="billAmount" placeholder="账单金额" required step="0.01"
-                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
-                        </div>
-                        <input type="date" id="billDueDate" required
-                            class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
-                        <div class="relative">
-                            <input type="number" id="billAPR" placeholder="年化利率（%）" required step="0.01"
+                        <div>
+                            <input type="text" id="billPlatform" placeholder="平台名称（如：花呗、信用卡A）" required maxlength="30"
                                 class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
-                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">%</span>
+                            <div id="billPlatformError" class="error-message">请输入平台名称</div>
                         </div>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
-                            <input type="number" id="billMinPayment" placeholder="最低还款额（可选，默认10%）" step="0.01"
-                                class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                        <div>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                                <input type="number" id="billAmount" placeholder="账单金额" required min="0.01" step="0.01"
+                                    class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                            </div>
+                            <div id="billAmountError" class="error-message">请输入有效的金额（大于0）</div>
+                        </div>
+                        <div>
+                            <input type="date" id="billDueDate" required
+                                class="input-glass w-full px-4 py-2 rounded-lg text-white outline-none">
+                            <div id="billDueDateError" class="error-message">请选择还款日</div>
+                        </div>
+                        <div>
+                            <div class="relative">
+                                <input type="number" id="billAPR" placeholder="年化利率（%）" required min="0" max="1000" step="0.01"
+                                    class="input-glass w-full px-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">%</span>
+                            </div>
+                            <div id="billAPRError" class="error-message">请输入有效的利率（0-1000%）</div>
+                        </div>
+                        <div>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">¥</span>
+                                <input type="number" id="billMinPayment" placeholder="最低还款额（可选，默认10%）" min="0" step="0.01"
+                                    class="input-glass w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400 outline-none">
+                            </div>
+                            <div id="billMinPaymentError" class="error-message">最低还款额不能为负数</div>
                         </div>
                         <button type="submit" class="btn-bill w-full py-2 rounded-lg text-white font-medium">
                             确认添加
@@ -457,6 +639,8 @@
         </div>
     </div>
 
+    <div id="toast" class="toast"></div>
+
     <script>
         const API_BASE = '';
         
@@ -467,30 +651,122 @@
         let currentMonth = new Date().getMonth() + 1;
 
         function formatCurrency(amount) {
-            return '¥' + parseFloat(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return '¥' + parseFloat(amount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function formatDate(dateStr) {
+            if (!dateStr) return '';
             const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '';
             return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
         }
 
         function getMonthName(month) {
             const months = ['一月', '二月', '三月', '四月', '五月', '六月', 
                            '七月', '八月', '九月', '十月', '十一月', '十二月'];
-            return months[month - 1];
+            return months[month - 1] || '';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showError(elementId, show = true) {
+            const errorEl = document.getElementById(elementId + 'Error');
+            const inputEl = document.getElementById(elementId);
+            
+            if (errorEl) {
+                if (show) {
+                    errorEl.classList.add('show');
+                } else {
+                    errorEl.classList.remove('show');
+                }
+            }
+            
+            if (inputEl) {
+                if (show) {
+                    inputEl.classList.add('error');
+                } else {
+                    inputEl.classList.remove('error');
+                }
+            }
+        }
+
+        function clearErrors(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            
+            const inputs = form.querySelectorAll('.input-glass');
+            inputs.forEach(input => {
+                input.classList.remove('error');
+            });
+            
+            const errors = form.querySelectorAll('.error-message');
+            errors.forEach(error => {
+                error.classList.remove('show');
+            });
+        }
+
+        function validateAmount(value, min = 0, allowZero = false) {
+            if (value === '' || value === null || value === undefined) return false;
+            const num = parseFloat(value);
+            if (isNaN(num)) return false;
+            if (allowZero) {
+                return num >= min;
+            }
+            return num > min;
+        }
+
+        function validateDate(value) {
+            if (!value) return false;
+            const date = new Date(value);
+            return !isNaN(date.getTime());
+        }
+
+        function validateAPR(value) {
+            if (value === '' || value === null || value === undefined) return false;
+            const num = parseFloat(value);
+            if (isNaN(num)) return false;
+            return num >= 0 && num <= 1000;
         }
 
         function toggleForm(formId) {
             const form = document.getElementById(formId);
             form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                clearErrors(formId);
+            }
+        }
+
+        function setButtonLoading(loading, buttonId = 'calculateBtn') {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+            
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading-spinner"></span><span>计算中...</span>';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<span>生成最优方案</span>';
+            }
         }
 
         async function fetchCalendar() {
             try {
                 const response = await fetch(`${API_BASE}/api/calendar?year=${currentYear}&month=${currentMonth}`);
-                const data = await response.json();
-                renderCalendar(data);
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderCalendar(result.data);
+                } else {
+                    console.error('Calendar error:', result.message);
+                }
             } catch (error) {
                 console.error('Error fetching calendar:', error);
             }
@@ -499,16 +775,21 @@
         async function changeMonth(direction) {
             try {
                 const response = await fetch(`${API_BASE}/api/month/${direction}`, { method: 'POST' });
-                const data = await response.json();
-                currentYear = data.year;
-                currentMonth = data.month;
-                renderCalendar(data);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentYear = result.data.year;
+                    currentMonth = result.data.month;
+                    renderCalendar(result.data);
+                }
             } catch (error) {
                 console.error('Error changing month:', error);
             }
         }
 
         function renderCalendar(data) {
+            if (!data) return;
+            
             document.getElementById('calendarTitle').textContent = 
                 `${data.year}年 ${getMonthName(data.month)}`;
             
@@ -526,7 +807,7 @@
                 grid.appendChild(emptyDay);
             }
             
-            for (const day of data.days) {
+            for (const day of data.days || []) {
                 const dayEl = document.createElement('div');
                 let className = 'calendar-day h-16 md:h-20 rounded-xl p-2 cursor-pointer border border-white/10 relative';
                 
@@ -564,7 +845,7 @@
                         <div class="tooltip -top-12 left-1/2 transform -translate-x-1/2">
                             ${hasIncome ? `<div class="text-green-400">收入: ${formatCurrency(day.income_amount)}</div>` : ''}
                             ${hasExpense ? `<div class="text-red-400">开支: ${formatCurrency(day.expense_amount)}</div>` : ''}
-                            ${hasBill ? day.bills_due.map(b => 
+                            ${hasBill ? (day.bills_due || []).map(b => 
                                 `<div class="text-pink-400">${b.platform}: ${formatCurrency(b.amount)}</div>`
                             ).join('') : ''}
                         </div>
@@ -578,42 +859,75 @@
         async function addIncome(event) {
             event.preventDefault();
             
-            const date = document.getElementById('incomeDate').value;
-            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            clearErrors('incomeForm');
+            
+            const dateVal = document.getElementById('incomeDate').value;
+            const amountVal = document.getElementById('incomeAmount').value;
             const description = document.getElementById('incomeDesc').value || '收入';
             
-            if (!date || isNaN(amount)) return;
+            let hasError = false;
+            
+            if (!validateDate(dateVal)) {
+                showError('incomeDate', true);
+                hasError = true;
+            }
+            
+            if (!validateAmount(amountVal, 0)) {
+                showError('incomeAmount', true);
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showToast('请填写正确的信息', 'error');
+                return;
+            }
+            
+            const amount = parseFloat(amountVal);
             
             try {
                 const response = await fetch(`${API_BASE}/api/incomes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ date, amount, description })
+                    body: JSON.stringify({ date: dateVal, amount, description })
                 });
                 
-                if (response.ok) {
-                    incomes.push(await response.json());
+                const result = await response.json();
+                
+                if (result.success) {
+                    incomes.push(result.data);
                     renderIncomes();
                     fetchCalendar();
                     
-                    document.getElementById('incomeDate').value = '';
+                    document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
                     document.getElementById('incomeAmount').value = '';
                     document.getElementById('incomeDesc').value = '';
                     toggleForm('incomeForm');
+                    showToast('收入添加成功！', 'success');
+                } else {
+                    showToast(result.message || '添加失败', 'error');
                 }
             } catch (error) {
                 console.error('Error adding income:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
         async function deleteIncome(id) {
             try {
-                await fetch(`${API_BASE}/api/incomes/${id}`, { method: 'DELETE' });
-                incomes = incomes.filter(i => i.id !== id);
-                renderIncomes();
-                fetchCalendar();
+                const response = await fetch(`${API_BASE}/api/incomes/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    incomes = incomes.filter(i => i.id !== id);
+                    renderIncomes();
+                    fetchCalendar();
+                    showToast('删除成功', 'success');
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
             } catch (error) {
                 console.error('Error deleting income:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
@@ -627,14 +941,15 @@
             
             list.innerHTML = incomes.map(income => `
                 <div class="list-item flex items-center justify-between p-3 rounded-lg">
-                    <div>
+                    <div class="flex-1">
                         <div class="text-green-400 font-medium">${formatCurrency(income.amount)}</div>
                         <div class="text-gray-400 text-sm">${income.description} · ${formatDate(income.date)}</div>
                     </div>
-                    <button onclick="deleteIncome(${income.id})" class="text-red-400 hover:text-red-300 p-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <button onclick="deleteIncome(${income.id})" class="delete-btn" title="删除">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
+                        <span>删除</span>
                     </button>
                 </div>
             `).join('');
@@ -643,11 +958,31 @@
         async function addExpense(event) {
             event.preventDefault();
             
-            const day_of_month = parseInt(document.getElementById('expenseDay').value);
-            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            clearErrors('expenseForm');
+            
+            const dayVal = document.getElementById('expenseDay').value;
+            const amountVal = document.getElementById('expenseAmount').value;
             const description = document.getElementById('expenseDesc').value || '日常开支';
             
-            if (!day_of_month || isNaN(amount)) return;
+            let hasError = false;
+            
+            if (!dayVal) {
+                showError('expenseDay', true);
+                hasError = true;
+            }
+            
+            if (!validateAmount(amountVal, 0)) {
+                showError('expenseAmount', true);
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showToast('请填写正确的信息', 'error');
+                return;
+            }
+            
+            const day_of_month = parseInt(dayVal);
+            const amount = parseFloat(amountVal);
             
             try {
                 const response = await fetch(`${API_BASE}/api/expenses`, {
@@ -656,8 +991,10 @@
                     body: JSON.stringify({ day_of_month, amount, description })
                 });
                 
-                if (response.ok) {
-                    expenses.push(await response.json());
+                const result = await response.json();
+                
+                if (result.success) {
+                    expenses.push(result.data);
                     renderExpenses();
                     fetchCalendar();
                     
@@ -665,20 +1002,32 @@
                     document.getElementById('expenseAmount').value = '';
                     document.getElementById('expenseDesc').value = '';
                     toggleForm('expenseForm');
+                    showToast('开支添加成功！', 'success');
+                } else {
+                    showToast(result.message || '添加失败', 'error');
                 }
             } catch (error) {
                 console.error('Error adding expense:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
         async function deleteExpense(id) {
             try {
-                await fetch(`${API_BASE}/api/expenses/${id}`, { method: 'DELETE' });
-                expenses = expenses.filter(e => e.id !== id);
-                renderExpenses();
-                fetchCalendar();
+                const response = await fetch(`${API_BASE}/api/expenses/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    expenses = expenses.filter(e => e.id !== id);
+                    renderExpenses();
+                    fetchCalendar();
+                    showToast('删除成功', 'success');
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
             } catch (error) {
                 console.error('Error deleting expense:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
@@ -692,14 +1041,15 @@
             
             list.innerHTML = expenses.map(expense => `
                 <div class="list-item flex items-center justify-between p-3 rounded-lg">
-                    <div>
+                    <div class="flex-1">
                         <div class="text-red-400 font-medium">${formatCurrency(expense.amount)}</div>
                         <div class="text-gray-400 text-sm">${expense.description} · 每月${expense.day_of_month}号</div>
                     </div>
-                    <button onclick="deleteExpense(${expense.id})" class="text-red-400 hover:text-red-300 p-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <button onclick="deleteExpense(${expense.id})" class="delete-btn" title="删除">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
+                        <span>删除</span>
                     </button>
                 </div>
             `).join('');
@@ -708,14 +1058,49 @@
         async function addBill(event) {
             event.preventDefault();
             
-            const platform = document.getElementById('billPlatform').value;
-            const amount = parseFloat(document.getElementById('billAmount').value);
-            const due_date = document.getElementById('billDueDate').value;
-            const apr = parseFloat(document.getElementById('billAPR').value);
-            const minPaymentStr = document.getElementById('billMinPayment').value;
-            const min_payment = minPaymentStr ? parseFloat(minPaymentStr) : amount * 0.1;
+            clearErrors('billForm');
             
-            if (!platform || isNaN(amount) || !due_date || isNaN(apr)) return;
+            const platform = document.getElementById('billPlatform').value.trim();
+            const amountVal = document.getElementById('billAmount').value;
+            const due_date = document.getElementById('billDueDate').value;
+            const aprVal = document.getElementById('billAPR').value;
+            const minPaymentVal = document.getElementById('billMinPayment').value;
+            
+            let hasError = false;
+            
+            if (!platform) {
+                showError('billPlatform', true);
+                hasError = true;
+            }
+            
+            if (!validateAmount(amountVal, 0)) {
+                showError('billAmount', true);
+                hasError = true;
+            }
+            
+            if (!validateDate(due_date)) {
+                showError('billDueDate', true);
+                hasError = true;
+            }
+            
+            if (!validateAPR(aprVal)) {
+                showError('billAPR', true);
+                hasError = true;
+            }
+            
+            if (minPaymentVal && !validateAmount(minPaymentVal, 0, true)) {
+                showError('billMinPayment', true);
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showToast('请填写正确的信息', 'error');
+                return;
+            }
+            
+            const amount = parseFloat(amountVal);
+            const apr = parseFloat(aprVal);
+            let min_payment = minPaymentVal ? parseFloat(minPaymentVal) : null;
             
             try {
                 const response = await fetch(`${API_BASE}/api/bills`, {
@@ -731,33 +1116,47 @@
                     })
                 });
                 
-                if (response.ok) {
-                    bills.push(await response.json());
+                const result = await response.json();
+                
+                if (result.success) {
+                    bills.push(result.data);
                     renderBills();
                     fetchCalendar();
                     checkBillsForCalculator();
                     
                     document.getElementById('billPlatform').value = '';
                     document.getElementById('billAmount').value = '';
-                    document.getElementById('billDueDate').value = '';
+                    document.getElementById('billDueDate').value = new Date().toISOString().split('T')[0];
                     document.getElementById('billAPR').value = '';
                     document.getElementById('billMinPayment').value = '';
                     toggleForm('billForm');
+                    showToast('账单添加成功！', 'success');
+                } else {
+                    showToast(result.message || '添加失败', 'error');
                 }
             } catch (error) {
                 console.error('Error adding bill:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
         async function deleteBill(id) {
             try {
-                await fetch(`${API_BASE}/api/bills/${id}`, { method: 'DELETE' });
-                bills = bills.filter(b => b.id !== id);
-                renderBills();
-                fetchCalendar();
-                checkBillsForCalculator();
+                const response = await fetch(`${API_BASE}/api/bills/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    bills = bills.filter(b => b.id !== id);
+                    renderBills();
+                    fetchCalendar();
+                    checkBillsForCalculator();
+                    showToast('删除成功', 'success');
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
             } catch (error) {
                 console.error('Error deleting bill:', error);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
@@ -772,6 +1171,9 @@
             list.innerHTML = bills.map(bill => {
                 const dueDate = new Date(bill.due_date);
                 const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                dueDate.setHours(0, 0, 0, 0);
+                
                 const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
                 
                 let statusText = '';
@@ -795,10 +1197,11 @@
                     <div class="list-item p-3 rounded-lg">
                         <div class="flex items-center justify-between mb-1">
                             <span class="font-medium text-pink-400">${bill.platform}</span>
-                            <button onclick="deleteBill(${bill.id})" class="text-red-400 hover:text-red-300 p-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            <button onclick="deleteBill(${bill.id})" class="delete-btn" title="删除">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
+                                <span>删除</span>
                             </button>
                         </div>
                         <div class="flex items-center justify-between">
@@ -826,17 +1229,31 @@
         }
 
         async function calculateRepayment() {
-            const availableCash = parseFloat(document.getElementById('availableCash').value);
+            const cashInput = document.getElementById('availableCash');
+            const cashVal = cashInput.value;
+            
+            showError('availableCash', false);
+            
+            if (cashVal === '' || cashVal === null) {
+                showError('availableCash', true);
+                showToast('请输入可用现金金额', 'error');
+                return;
+            }
+            
+            const availableCash = parseFloat(cashVal);
             
             if (isNaN(availableCash) || availableCash < 0) {
-                alert('请输入有效的可用现金金额');
+                showError('availableCash', true);
+                showToast('请输入有效的金额（0或正数）', 'error');
                 return;
             }
             
             if (bills.length === 0) {
-                alert('请先添加账单');
+                showToast('请先添加账单', 'warning');
                 return;
             }
+            
+            setButtonLoading(true);
             
             try {
                 const response = await fetch(`${API_BASE}/api/calculate-repayment`, {
@@ -847,14 +1264,18 @@
                 
                 const result = await response.json();
                 
+                setButtonLoading(false);
+                
                 if (result.success) {
                     displayRepaymentResult(result);
+                    showToast('方案生成成功！', 'success');
                 } else {
-                    alert(result.message);
+                    showToast(result.message || '计算失败', 'error');
                 }
             } catch (error) {
                 console.error('Error calculating repayment:', error);
-                alert('计算还款方案时出错');
+                setButtonLoading(false);
+                showToast('网络错误，请稍后重试', 'error');
             }
         }
 
@@ -867,10 +1288,17 @@
             document.getElementById('totalPayment').textContent = formatCurrency(result.total_payment);
             document.getElementById('remainingCash').textContent = formatCurrency(result.remaining_cash);
             
-            document.getElementById('recommendationText').textContent = result.recommendation_text;
+            document.getElementById('recommendationText').textContent = result.recommendation_text || '暂无建议';
             
             const plansContainer = document.getElementById('plansContainer');
-            plansContainer.innerHTML = result.plans.map(plan => {
+            const plans = result.plans || [];
+            
+            if (plans.length === 0) {
+                plansContainer.innerHTML = '<p class="text-gray-400 text-center py-4">暂无还款方案</p>';
+                return;
+            }
+            
+            plansContainer.innerHTML = plans.map(plan => {
                 let planClass = '';
                 let typeIcon = '';
                 
@@ -887,9 +1315,10 @@
                 
                 let detailText = '';
                 if (plan.repayment_type === '分期还款') {
-                    detailText = `分${plan.installment_months}期，每期 ${formatCurrency(plan.monthly_payment)}`;
+                    detailText = `分${plan.installment_months || 3}期，每期 ${formatCurrency(plan.monthly_payment)}`;
                 } else if (plan.repayment_type === '最低还款' && plan.payment_amount > 0) {
-                    detailText = `还款 ${formatCurrency(plan.payment_amount)}，剩余 ${formatCurrency(plan.original_amount - plan.payment_amount)}`;
+                    const remaining = (plan.original_amount || 0) - (plan.payment_amount || 0);
+                    detailText = `还款 ${formatCurrency(plan.payment_amount)}，剩余 ${formatCurrency(remaining)}`;
                 } else if (plan.payment_amount === 0) {
                     detailText = '资金不足，建议优先处理';
                 } else {
@@ -924,6 +1353,10 @@
                 expenses = await expensesRes.json();
                 bills = await billsRes.json();
                 
+                if (!Array.isArray(incomes)) incomes = [];
+                if (!Array.isArray(expenses)) expenses = [];
+                if (!Array.isArray(bills)) bills = [];
+                
                 renderIncomes();
                 renderExpenses();
                 renderBills();
@@ -936,8 +1369,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
-            document.getElementById('incomeDate').value = today.toISOString().split('T')[0];
-            document.getElementById('billDueDate').value = today.toISOString().split('T')[0];
+            const todayStr = today.toISOString().split('T')[0];
+            
+            const incomeDate = document.getElementById('incomeDate');
+            const billDueDate = document.getElementById('billDueDate');
+            
+            if (incomeDate) incomeDate.value = todayStr;
+            if (billDueDate) billDueDate.value = todayStr;
             
             loadInitialData();
         });
